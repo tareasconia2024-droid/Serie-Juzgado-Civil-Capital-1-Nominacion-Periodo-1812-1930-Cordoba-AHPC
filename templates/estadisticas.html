@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas · AHPC Juzgado Civil 1°{% endblock %}
+
+{% block extra_head %}
+<style>
+.chart-section h2 {
+  font-family: var(--font-display); font-size: 1rem; color: var(--ink);
+  font-weight: 600; margin-bottom: 1.15rem; padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+.bar-chart-v {
+  display: flex; align-items: flex-end; gap: .35rem; height: 200px; padding: 0 .25rem;
+}
+.bar-col { display:flex; flex-direction:column; align-items:center; gap:.25rem; flex:1; height:100%; justify-content:flex-end; }
+.bar-col .bv { font-family:var(--font-mono); font-size:.6rem; color:var(--ink-light); }
+.bar-col .bb { width:100%; background:var(--ink); border-radius:2px 2px 0 0; }
+.bar-col .bb:hover { background:var(--ink-mid); }
+.bar-col .bl { font-family:var(--font-mono); font-size:.6rem; color:var(--ink-light); writing-mode:vertical-rl; transform:rotate(180deg); line-height:1; }
+.stats-two { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+@media(max-width:750px){ .stats-two{grid-template-columns:1fr;} .hbar-label{width:100px;min-width:100px;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Estadísticas del fondo</h1>
+  <div class="subtitle">{{ total }} expedientes indexados</div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:2rem;">
+  <div class="stat-block">
+    <div class="stat-num">{{ total }}</div>
+    <div class="stat-label">Total expedientes</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-num">{{ total_causas }}</div>
+    <div class="stat-label">Tipos de causa</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-num">{{ total_legajos }}</div>
+    <div class="stat-label">Legajos</div>
+  </div>
+</div>
+
+<div class="stats-two">
+
+  <!-- Décadas -->
+  <div class="card chart-section">
+    <h2>Expedientes por década</h2>
+    {% set max_d = namespace(val=1) %}
+    {% for d in por_decada %}{% if d.total > max_d.val %}{% set max_d.val = d.total %}{% endif %}{% endfor %}
+    <div class="bar-chart-v">
+      {% for d in por_decada %}
+      {% set pct = ((d.total / max_d.val) * 100)|int %}
+      <div class="bar-col">
+        <span class="bv">{{ d.total }}</span>
+        <div class="bb" style="height:{{ pct if pct > 2 else 2 }}%;
+          {% if d.total == max_d.val %}background:var(--sepia-dark);{% endif %}"
+          title="{{ d.decada }}s: {{ d.total }}"></div>
+        <span class="bl">{{ d.decada }}s</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Top 15 causas -->
+  <div class="card chart-section">
+    <h2>Principales causas (top 15)</h2>
+    {% set max_c = namespace(val=1) %}
+    {% for c in top_causas[:15] %}{% if c.total > max_c.val %}{% set max_c.val = c.total %}{% endif %}{% endfor %}
+    <div style="display:flex; flex-direction:column; gap:.38rem;">
+      {% for c in top_causas[:15] %}
+      {% set pct = ((c.total / max_c.val)*100)|int %}
+      <div class="hbar-row">
+        <a class="hbar-label" href="/causa/{{ c.causa | urlencode }}"
+           style="color:var(--sepia-dark); text-decoration:none;" title="{{ c.causa }}">
+          {{ c.causa }}
+        </a>
+        <div class="hbar-track">
+          <div class="hbar-fill {% if loop.index <= 3 %}sepia{% endif %}" style="width:{{ pct }}%;"></div>
+        </div>
+        <span class="hbar-val">{{ c.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Top 30 causas completo -->
+<div class="card chart-section" style="margin-bottom:1.5rem;">
+  <h2>Top 30 causas con más expedientes</h2>
+  {% set max_a = namespace(val=1) %}
+  {% for c in top_causas %}{% if c.total > max_a.val %}{% set max_a.val = c.total %}{% endif %}{% endfor %}
+  <div style="display:flex; flex-direction:column; gap:.38rem;">
+    {% for c in top_causas %}
+    {% set pct = ((c.total / max_a.val)*100)|int %}
+    <div class="hbar-row">
+      <a class="hbar-label" href="/causa/{{ c.causa | urlencode }}"
+         style="color:var(--sepia-dark); text-decoration:none;" title="{{ c.causa }}">
+        {{ c.causa }}
+      </a>
+      <div class="hbar-track">
+        <div class="hbar-fill {% if loop.index <= 3 %}sepia{% endif %}" style="width:{{ pct }}%;"></div>
+      </div>
+      <span class="hbar-val">{{ c.total }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Tabla décadas -->
+<div class="card chart-section">
+  <h2>Detalle por década</h2>
+  {% set total_exp = namespace(val=0) %}
+  {% for d in por_decada %}{% set total_exp.val = total_exp.val + d.total %}{% endfor %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Década</th>
+        <th style="text-align:right; width:90px;">Expedientes</th>
+        <th style="text-align:right; width:65px;">% total</th>
+        <th style="width:220px;"></th>
+      </tr></thead>
+      <tbody>
+      {% for d in por_decada %}
+      {% set pct2 = (d.total / total_exp.val * 100)|round(1) %}
+      <tr>
+        <td style="font-family:var(--font-mono); font-size:.84rem;">{{ d.decada }}–{{ d.decada + 9 }}</td>
+        <td class="mono" style="text-align:right;">{{ d.total }}</td>
+        <td class="mono" style="text-align:right;">{{ pct2 }}%</td>
+        <td>
+          <div style="height:8px; background:var(--parch3); border-radius:2px; overflow:hidden;">
+            <div style="height:100%; width:{{ (d.total / total_exp.val * 100)|int }}%;
+                        background:var(--ink); border-radius:2px;"></div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

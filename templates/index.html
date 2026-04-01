@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Inicio · AHPC Juzgado Civil Capital 1°{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Juzgado Civil Capital<br><em style="font-weight:400; font-size:1.3rem;">1° Nominación</em></h1>
+    <div class="subtitle">Índice onomástico de partes de expedientes judiciales · {{ anio_inicio }}–{{ anio_fin }}</div>
+  </div>
+  <a class="btn btn-primary" href="/buscar">🔍 Buscar expedientes</a>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-block">
+    <div class="stat-num">{{ total }}</div>
+    <div class="stat-label">Expedientes</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-num">{{ anio_inicio }}</div>
+    <div class="stat-label">Año inicial</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-num">{{ anio_fin }}</div>
+    <div class="stat-label">Año final</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-num">{{ causas }}</div>
+    <div class="stat-label">Tipos de causa</div>
+  </div>
+</div>
+
+<div class="ornament">❦ · · · ❦</div>
+
+<!-- DISTRIBUCIÓN + TOP CAUSAS -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem;" class="home-grid">
+
+  <!-- Distribución temporal -->
+  <div class="card">
+    <h2 style="font-family:var(--font-display); font-size:1.05rem; color:var(--ink); font-weight:600; margin-bottom:1.1rem; border-bottom:1px solid var(--border-light); padding-bottom:.5rem;">
+      Distribución por década
+    </h2>
+    {% set max_d = namespace(val=1) %}
+    {% for d in por_decada %}{% if d.t > max_d.val %}{% set max_d.val = d.t %}{% endif %}{% endfor %}
+    <div style="display:flex; align-items:flex-end; gap:.4rem; height:160px; padding:0 .25rem;">
+      {% for d in por_decada %}
+      {% set pct = ((d.t / max_d.val) * 100) | int %}
+      <div style="display:flex; flex-direction:column; align-items:center; gap:.25rem; flex:1; height:100%; justify-content:flex-end;">
+        <span style="font-family:var(--font-mono); font-size:.58rem; color:var(--ink-light);">{{ d.t }}</span>
+        <div style="width:100%; height:{{ pct if pct > 2 else 2 }}%;
+             background:{% if d.t == max_d.val %}var(--sepia-dark){% else %}var(--ink){% endif %};
+             border-radius:2px 2px 0 0;" title="{{ d.decada }}s: {{ d.t }}"></div>
+        <span style="font-family:var(--font-mono); font-size:.58rem; color:var(--ink-light); writing-mode:vertical-rl; transform:rotate(180deg); line-height:1;">{{ d.decada }}s</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Top causas -->
+  <div class="card">
+    <h2 style="font-family:var(--font-display); font-size:1.05rem; color:var(--ink); font-weight:600; margin-bottom:1.1rem; border-bottom:1px solid var(--border-light); padding-bottom:.5rem;">
+      Causas más frecuentes
+    </h2>
+    <div style="display:flex; flex-wrap:wrap; gap:.4rem;">
+      {% for c in top_causas %}
+      <a href="/causa/{{ c.causa | urlencode }}"
+         style="display:inline-flex; align-items:center; gap:.3rem;
+                background:var(--parch2); border:1px solid var(--border-light);
+                padding:.28rem .65rem; border-radius:3px;
+                font-size:{% if loop.index <= 3 %}.9{% elif loop.index <= 7 %}.82{% else %}.76{% endif %}rem;
+                color:var(--ink); text-decoration:none; transition:background .15s;"
+         onmouseover="this.style.background='#fdf0d4'"
+         onmouseout="this.style.background='var(--parch2)'">
+        {{ c.causa }}
+        <span style="font-family:var(--font-mono); font-size:.62rem; color:var(--ink-light);">({{ c.t }})</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- FONDO INFO -->
+<div class="card" style="border-left:4px solid var(--sepia);">
+  <h2 style="font-family:var(--font-display); font-size:1rem; color:var(--ink); font-weight:600; margin-bottom:.85rem;">
+    Identificación del fondo
+  </h2>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:.75rem; font-size:.85rem;">
+    <div><span style="font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-light); display:block; margin-bottom:.2rem;">Fondo</span>
+      Poder Judicial de la Provincia de Córdoba</div>
+    <div><span style="font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-light); display:block; margin-bottom:.2rem;">Subfondo</span>
+      Juzgados Civiles</div>
+    <div><span style="font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-light); display:block; margin-bottom:.2rem;">Serie</span>
+      Juzgado Civil Capital 1° Nominación</div>
+    <div><span style="font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-light); display:block; margin-bottom:.2rem;">Período</span>
+      1883 – 1925</div>
+  </div>
+</div>
+
+<style>@media(max-width:700px){.home-grid{grid-template-columns:1fr!important;}}</style>
+{% endblock %}

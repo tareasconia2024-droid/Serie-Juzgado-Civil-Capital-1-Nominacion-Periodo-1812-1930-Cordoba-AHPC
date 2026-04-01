@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ causa }} · AHPC Civil 1°{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ causa }}</h1>
+    <div class="subtitle">{{ registros|length }} expediente{{ 's' if registros|length != 1 }}</div>
+  </div>
+  <div style="display:flex; gap:.75rem;">
+    <a class="btn btn-sepia" href="/api/exportar-pdf?causa={{ causa | urlencode }}" target="_blank">⬇ PDF</a>
+    <a class="btn btn-secondary" href="/buscar">← Buscar</a>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th>Año</th><th>Legajo</th><th>Expte.</th><th>Partes</th><th>Causa</th>
+    </tr></thead>
+    <tbody>
+    {% for r in registros %}
+    <tr onclick="location.href='/detalle/{{ r.id }}'">
+      <td class="mono">{{ r.anio or '—' }}</td>
+      <td class="mono">{{ r.legajo }}</td>
+      <td class="mono">{{ r.expediente }}</td>
+      <td><strong>{{ r.partes }}</strong></td>
+      <td style="font-size:.8rem; color:var(--ink-light);">{{ r.causa }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

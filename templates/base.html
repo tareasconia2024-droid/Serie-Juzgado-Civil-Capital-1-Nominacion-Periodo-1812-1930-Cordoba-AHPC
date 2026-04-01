@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}AHPC · Juzgado Civil Capital 1°{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:         #1a1208;
+  --ink-mid:     #3d2e14;
+  --ink-light:   #6b5030;
+  --parch:       #faf5eb;
+  --parch2:      #f3ead8;
+  --parch3:      #e8dcc4;
+  --sepia:       #c8a96e;
+  --sepia-dark:  #8b6914;
+  --red-seal:    #7a1c1c;
+  --border:      #d4b878;
+  --border-light:#e8d8aa;
+  --shadow:      rgba(26,18,8,0.14);
+  --font-main:   'Crimson Pro', Georgia, serif;
+  --font-display:'Cormorant Garamond', Georgia, serif;
+  --font-mono:   'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--parch);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 16px;
+  background-image:
+    radial-gradient(ellipse at 15% 5%,  rgba(200,169,110,0.09) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 95%, rgba(122,28,28,0.05)  0%, transparent 45%);
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  border-bottom: 3px solid var(--sepia);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.4);
+}
+.header-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; height: 58px;
+}
+.header-brand { display: flex; align-items: center; gap: .8rem; text-decoration: none; }
+.brand-sigla  {
+  font-family: var(--font-display);
+  font-size: 1.15rem; color: var(--sepia);
+  letter-spacing: .15em;
+}
+.brand-title {
+  font-family: var(--font-display);
+  font-size: .82rem; color: rgba(255,255,255,.75);
+  letter-spacing: .05em; line-height: 1.3;
+}
+.brand-sub { font-size: .68rem; color: rgba(255,255,255,.42); letter-spacing: .04em; }
+
+nav { display: flex; gap: .2rem; }
+nav a {
+  font-family: var(--font-main); font-size: .8rem;
+  color: rgba(255,255,255,.65); text-decoration: none;
+  padding: .4rem .85rem; border-radius: 3px;
+  letter-spacing: .04em; transition: all .2s;
+}
+nav a:hover, nav a.active { color: #fff; background: rgba(200,169,110,.22); }
+
+/* ── MAIN ── */
+main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  margin-bottom: 2.25rem; padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.page-header h1 {
+  font-family: var(--font-display); font-size: 2rem;
+  color: var(--ink); font-weight: 600; letter-spacing: .02em;
+}
+.subtitle { font-size: .83rem; color: var(--ink-light); font-style: italic; margin-top: .2rem; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 6px var(--shadow);
+}
+
+/* ── STAT BLOCKS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(155px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-block {
+  background: var(--ink); color: #fff;
+  padding: 1.2rem 1.4rem; border-radius: 3px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.stat-block::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--sepia);
+}
+.stat-num   { font-family: var(--font-display); font-size: 2.1rem; color: var(--sepia); line-height: 1; margin-bottom: .3rem; }
+.stat-label { font-size: .72rem; color: rgba(255,255,255,.6); letter-spacing: .08em; text-transform: uppercase; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; border-radius: 3px; border: 1px solid var(--border-light); }
+table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+thead th {
+  background: var(--ink); color: var(--sepia);
+  font-family: var(--font-main); font-weight: 600; font-size: .72rem;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: .65rem 1rem; text-align: left; white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--parch3); transition: background .14s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #fdf5e4; cursor: pointer; }
+tbody td { padding: .5rem 1rem; vertical-align: top; line-height: 1.45; }
+td.mono { font-family: var(--font-mono); font-size: .77rem; color: var(--ink-light); }
+
+/* ── SEARCH FORM ── */
+.search-form {
+  background: #fff; border: 1px solid var(--border-light);
+  border-radius: 3px; padding: 1.5rem; margin-bottom: 1.5rem;
+  box-shadow: 0 1px 6px var(--shadow);
+}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(195px,1fr)); gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: .32rem; }
+.form-group label {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--ink-light); font-family: var(--font-main);
+}
+.form-group input, .form-group select {
+  font-family: var(--font-main); font-size: .9rem;
+  border: 1px solid var(--border); background: var(--parch);
+  color: var(--ink); padding: .48rem .75rem; border-radius: 3px;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--sepia-dark);
+  box-shadow: 0 0 0 3px rgba(139,105,20,.12);
+}
+.form-actions { display: flex; gap: .75rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: var(--font-main); font-size: .84rem;
+  padding: .5rem 1.2rem; border-radius: 3px; cursor: pointer;
+  border: 1px solid transparent; transition: all .18s;
+  letter-spacing: .03em; text-decoration: none;
+  display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-primary   { background: var(--ink);       color: #fff;          border-color: var(--ink); }
+.btn-primary:hover { background: var(--ink-mid); }
+.btn-secondary { background: transparent;      color: var(--ink-mid); border-color: var(--border); }
+.btn-secondary:hover { background: var(--parch2); }
+.btn-sepia     { background: var(--sepia-dark); color: #fff;          border-color: var(--sepia-dark); }
+.btn-sepia:hover { background: #755812; }
+
+/* ── AUTOCOMPLETE ── */
+.autocomplete-wrap { position: relative; }
+.ac-list {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #fff; border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 3px 3px; z-index: 50;
+  max-height: 210px; overflow-y: auto;
+  box-shadow: 0 4px 12px var(--shadow); display: none;
+}
+.ac-list.open { display: block; }
+.ac-item {
+  padding: .48rem .75rem; font-size: .84rem; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--parch2);
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover { background: #fdf5e4; }
+.ac-count { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-light); }
+
+/* ── PAGINATION ── */
+.pagination { display: flex; gap: .4rem; align-items: center; margin-top: 1.25rem; flex-wrap: wrap; }
+.page-btn {
+  font-family: var(--font-mono); font-size: .77rem;
+  min-width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; background: #fff; color: var(--ink); transition: all .14s;
+}
+.page-btn:hover, .page-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.page-info { font-size: .78rem; color: var(--ink-light); margin-left: .5rem; }
+
+/* ── MISC ── */
+.result-count { font-size: .83rem; color: var(--ink-light); font-style: italic; margin-bottom: .75rem; }
+.result-count strong { color: var(--ink); font-style: normal; }
+.ornament { text-align: center; color: var(--sepia); font-size: 1.1rem; letter-spacing: .5em; margin: 1.2rem 0; opacity: .55; user-select: none; }
+#loading { text-align: center; padding: 2rem; color: var(--ink-light); font-style: italic; display: none; }
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid var(--parch3); border-top-color: var(--ink);
+  border-radius: 50%; animation: spin .7s linear infinite; margin-right: .5rem; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CHARTS ── */
+.hbar-row   { display: flex; align-items: center; gap: .6rem; }
+.hbar-label {
+  width: 180px; min-width: 180px; text-align: right;
+  color: var(--ink); white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; font-size: .8rem;
+}
+.hbar-track { flex: 1; background: var(--parch3); border-radius: 2px; height: 16px; overflow: hidden; }
+.hbar-fill  { height: 100%; border-radius: 2px; background: var(--ink); }
+.hbar-fill.sepia { background: var(--sepia-dark); }
+.hbar-val   { font-family: var(--font-mono); font-size: .7rem; color: var(--ink-light); min-width: 38px; text-align: right; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; }
+  nav a { padding: .35rem .5rem; font-size: .72rem; }
+  .brand-sub { display: none; }
+  .hbar-label { width: 100px; min-width: 100px; }
+}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="header-brand" href="/">
+      <span class="brand-sigla">AHPC</span>
+      <div>
+        <div class="brand-title">Juzgado Civil Capital 1° Nominación</div>
+        <div class="brand-sub">Archivo Histórico · Prov. de Córdoba · Índice Onomástico</div>
+      </div>
+    </a>
+    <nav>
+      <a href="/"             class="{% if request.endpoint=='index'        %}active{% endif %}">Inicio</a>
+      <a href="/buscar"       class="{% if request.endpoint=='buscar'       %}active{% endif %}">Buscar</a>
+      <a href="/estadisticas" class="{% if request.endpoint=='estadisticas' %}active{% endif %}">Estadísticas</a>
+    </nav>
+  </div>
+</header>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer style="background:var(--ink); border-top:2px solid var(--sepia); color:rgba(255,255,255,.45);
+               text-align:center; padding:1.2rem; font-size:.73rem; letter-spacing:.05em;">
+  <span style="color:var(--sepia);">Archivo Histórico de la Provincia de Córdoba</span> &nbsp;·&nbsp;
+  Juzgado Civil Capital 1° Nominación &nbsp;·&nbsp; Índice Onomástico (1883–1925)
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

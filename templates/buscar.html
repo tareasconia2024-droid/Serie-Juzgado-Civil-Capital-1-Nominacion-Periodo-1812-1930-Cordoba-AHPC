@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}Buscar · AHPC Juzgado Civil 1°{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Buscar expedientes</h1>
+    <div class="subtitle">Filtrá por partes, causa, período, legajo o expediente</div>
+  </div>
+</div>
+
+<div class="search-form">
+  <div class="form-grid">
+
+    <div class="form-group autocomplete-wrap" style="grid-column: span 2;">
+      <label>Partes (apellido / nombre)</label>
+      <input type="text" id="f-partes" placeholder="Ej: García, López c/…" value="{{ partes_pre }}" autocomplete="off">
+      <div class="ac-list" id="ac-partes"></div>
+    </div>
+
+    <div class="form-group autocomplete-wrap">
+      <label>Causa / tipo de juicio</label>
+      <input type="text" id="f-causa" placeholder="Ej: Sucesorio, Mensura…" value="{{ causa_pre }}" autocomplete="off">
+      <div class="ac-list" id="ac-causa"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Año desde</label>
+      <input type="number" id="f-desde" placeholder="1883" min="1883" max="1925">
+    </div>
+
+    <div class="form-group">
+      <label>Año hasta</label>
+      <input type="number" id="f-hasta" placeholder="1925" min="1883" max="1925">
+    </div>
+
+    <div class="form-group">
+      <label>Legajo</label>
+      <input type="text" id="f-legajo" placeholder="Nº legajo">
+    </div>
+
+    <div class="form-group">
+      <label>Expediente</label>
+      <input type="text" id="f-expediente" placeholder="Nº expediente">
+    </div>
+
+    <div class="form-group">
+      <label>Texto libre (FTS)</label>
+      <input type="text" id="f-texto" placeholder="Búsqueda en partes y causas…">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" onclick="buscar(1)">🔍 Buscar</button>
+    <button class="btn btn-secondary" onclick="limpiar()">✕ Limpiar</button>
+    <button class="btn btn-sepia" onclick="exportarPDF()" id="btn-pdf" style="display:none;">⬇ Exportar PDF</button>
+    <span style="font-size:.74rem; color:var(--ink-light); margin-left:auto; font-style:italic;">Máx. 500 registros en PDF</span>
+  </div>
+</div>
+
+<div id="result-count" class="result-count" style="display:none;"></div>
+<div id="loading"><span class="spinner"></span> Consultando el archivo…</div>
+<div id="results"></div>
+<div id="pagination" class="pagination"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+
+function makeAC(inputId, listId, endpoint, key) {
+  const inp  = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  let t;
+  inp.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const q = inp.value.trim();
+      if (q.length < 2) { list.classList.remove('open'); return; }
+      fetch(`/api/${endpoint}-autocomplete?q=${encodeURIComponent(q)}`)
+        .then(r => r.json()).then(items => {
+          list.innerHTML = '';
+          if (!items.length) { list.classList.remove('open'); return; }
+          items.forEach(item => {
+            const d = document.createElement('div');
+            d.className = 'ac-item';
+            d.innerHTML = `<span>${item[key]}</span><span class="ac-count">${item.total}</span>`;
+            d.onclick = () => { inp.value = item[key]; list.classList.remove('open'); buscar(1); };
+            list.appendChild(d);
+          });
+          list.classList.add('open');
+        });
+    }, 220);
+  });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { list.classList.remove('open'); buscar(1); } });
+  document.addEventListener('click', e => { if (!e.target.closest(`#${inputId}`) && !e.target.closest(`#${listId}`)) list.classList.remove('open'); });
+}
+
+makeAC('f-partes', 'ac-partes', 'partes', 'partes');
+makeAC('f-causa',  'ac-causa',  'causas', 'causa');
+
+function getParams() {
+  return {
+    partes:     document.getElementById('f-partes').value.trim(),
+    causa:      document.getElementById('f-causa').value.trim(),
+    anio_desde: document.getElementById('f-desde').value,
+    anio_hasta: document.getElementById('f-hasta').value,
+    legajo:     document.getElementById('f-legajo').value.trim(),
+    expediente: document.getElementById('f-expediente').value.trim(),
+    texto:      document.getElementById('f-texto').value.trim(),
+  };
+}
+
+function buscar(page) {
+  currentPage = page;
+  const p = getParams();
+  if (!Object.values(p).some(v => v !== '')) { renderVacio(); return; }
+  const qs = new URLSearchParams({ ...p, page });
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('result-count').style.display = 'none';
+  fetch(`/api/buscar?${qs}`)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('loading').style.display = 'none';
+      renderResults(data);
+      renderPagination(data);
+      document.getElementById('btn-pdf').style.display = data.total > 0 ? 'inline-flex' : 'none';
+    });
+}
+
+function renderVacio() {
+  document.getElementById('results').innerHTML =
+    `<div style="text-align:center;padding:3rem;color:var(--ink-light);font-style:italic;">
+       Ingresá al menos un criterio para consultar el índice.
+     </div>`;
+  document.getElementById('result-count').style.display = 'none';
+  document.getElementById('btn-pdf').style.display = 'none';
+}
+
+function renderResults(data) {
+  const rc = document.getElementById('result-count');
+  rc.style.display = 'block';
+  rc.innerHTML = data.total === 0
+    ? 'No se encontraron expedientes.'
+    : `Se encontraron <strong>${data.total.toLocaleString('es-AR')}</strong> expediente${data.total !== 1 ? 's' : ''}.`;
+  if (!data.registros.length) { document.getElementById('results').innerHTML = ''; return; }
+
+  let html = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Año</th><th>Legajo</th><th>Expte.</th><th>Partes</th><th>Causa</th>
+    </tr></thead><tbody>`;
+  data.registros.forEach(r => {
+    html += `<tr onclick="location.href='/detalle/${r.id}'">
+      <td class="mono">${r.anio || '—'}</td>
+      <td class="mono">${r.legajo || ''}</td>
+      <td class="mono">${r.expediente || ''}</td>
+      <td><strong>${r.partes || ''}</strong></td>
+      <td style="font-size:.8rem;color:var(--ink-light);">${r.causa || ''}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('results').innerHTML = html;
+}
+
+function renderPagination(data) {
+  const total = Math.ceil(data.total / data.per_page);
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  const p = currentPage;
+  let html = '';
+  if (p > 1) html += `<button class="page-btn" onclick="buscar(${p - 1})">‹</button>`;
+  for (let i = Math.max(1, p - 2); i <= Math.min(total, p + 2); i++)
+    html += `<button class="page-btn${i === p ? ' active' : ''}" onclick="buscar(${i})">${i}</button>`;
+  if (p < total) html += `<button class="page-btn" onclick="buscar(${p + 1})">›</button>`;
+  html += `<span class="page-info">Página ${p} de ${total}</span>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function limpiar() {
+  ['f-partes','f-causa','f-desde','f-hasta','f-legajo','f-expediente','f-texto']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('result-count').style.display = 'none';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('btn-pdf').style.display = 'none';
+}
+
+function exportarPDF() {
+  window.open('/api/exportar-pdf?' + new URLSearchParams(getParams()), '_blank');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search);
+  if (p.get('partes') || p.get('causa')) buscar(1);
+});
+</script>
+{% endblock %}

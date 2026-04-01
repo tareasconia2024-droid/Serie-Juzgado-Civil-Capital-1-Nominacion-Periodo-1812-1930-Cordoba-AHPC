@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}{{ reg.partes }} · AHPC Civil 1°{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 style="font-size:1.55rem;">{{ reg.partes }}</h1>
+    <div class="subtitle">Detalle de expediente judicial</div>
+  </div>
+  <a class="btn btn-secondary" href="javascript:history.back()">← Volver</a>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;" class="det-grid">
+
+  <!-- Ficha principal -->
+  <div class="card" style="border-top:4px solid var(--sepia);">
+    <h2 style="font-family:var(--font-display); font-size:1rem; color:var(--ink); font-weight:600; margin-bottom:1.2rem;">
+      Identificación documental
+    </h2>
+    <table style="width:100%; font-size:.86rem; border-collapse:collapse;">
+      {% set fields = [
+        ('Fondo',       reg.fondo),
+        ('Subfondo',    reg.subfondo),
+        ('Serie',       reg.serie),
+        ('Año',         reg.anio),
+        ('Legajo',      reg.legajo),
+        ('Expediente',  reg.expediente),
+        ('Partes',      reg.partes),
+        ('Causa',       reg.causa),
+      ] %}
+      {% for label, val in fields %}
+      <tr style="border-bottom:1px solid var(--parch3);">
+        <td style="padding:.48rem .75rem .48rem 0; width:34%; font-size:.69rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-light); vertical-align:top; white-space:nowrap;">
+          {{ label }}
+        </td>
+        <td style="padding:.48rem 0; font-weight:{% if label in ['Partes','Causa'] %}600{% else %}400{% endif %};">
+          {% if label == 'Causa' and val %}
+            <a href="/causa/{{ val | urlencode }}" style="color:var(--sepia-dark); text-decoration:none;">{{ val }}</a>
+          {% else %}
+            {{ val or '—' }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div style="margin-top:1.25rem; display:flex; gap:.75rem; flex-wrap:wrap;">
+      {% if reg.causa %}
+      <a class="btn btn-primary" href="/causa/{{ reg.causa | urlencode }}">
+        Ver todos los expedientes · {{ reg.causa }}
+      </a>
+      {% endif %}
+      <a class="btn btn-sepia" href="/api/exportar-pdf?causa={{ reg.causa | urlencode }}" target="_blank">
+        ⬇ PDF de esta causa
+      </a>
+    </div>
+  </div>
+
+  <!-- Otros expedientes con el mismo apellido -->
+  <div class="card" style="border-top:4px solid var(--parch3);">
+    {% if otros_partes %}
+      <h2 style="font-family:var(--font-display); font-size:.95rem; color:var(--ink); font-weight:600; margin-bottom:.9rem;">
+        Otros expedientes con apellido <em style="color:var(--sepia-dark);">{{ apellido }}</em>
+        <span style="font-size:.75rem; color:var(--ink-light); font-weight:400;">
+          — {{ otros_partes|length }} resultado{{ 's' if otros_partes|length != 1 }}
+        </span>
+      </h2>
+      <div class="table-wrap" style="max-height:420px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>Año</th><th>Legajo</th><th>Expte.</th><th>Partes</th><th>Causa</th></tr></thead>
+          <tbody>
+          {% for o in otros_partes %}
+          <tr onclick="location.href='/detalle/{{ o.id }}'"
+              {% if o.id == reg.id %}style="background:var(--parch2);"{% endif %}>
+            <td class="mono">{{ o.anio or '—' }}</td>
+            <td class="mono">{{ o.legajo }}</td>
+            <td class="mono">{{ o.expediente }}</td>
+            <td style="font-size:.8rem;">{{ o.partes }}</td>
+            <td style="font-size:.76rem; color:var(--ink-light);">{{ o.causa }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if otros_partes|length == 50 %}
+      <p style="font-size:.74rem; color:var(--ink-light); margin-top:.6rem; font-style:italic;">
+        Mostrando los primeros 50 resultados.
+        <a href="/buscar?partes={{ apellido | urlencode }}" style="color:var(--sepia-dark);">Ver todos →</a>
+      </p>
+      {% endif %}
+    {% else %}
+      <h2 style="font-family:var(--font-display); font-size:.95rem; color:var(--ink); font-weight:600; margin-bottom:.75rem;">
+        Otros expedientes con apellido <em style="color:var(--sepia-dark);">{{ apellido }}</em>
+      </h2>
+      <p style="font-size:.84rem; color:var(--ink-light); font-style:italic;">
+        No se encontraron otros expedientes con este apellido.
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<style>@media(max-width:700px){.det-grid{grid-template-columns:1fr!important;}}</style>
+{% endblock %}
